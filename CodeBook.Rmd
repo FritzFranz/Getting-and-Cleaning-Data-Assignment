@@ -1,0 +1,73 @@
+---
+title: "CodeBook"
+author: "FF Getting and Cleaning Data - Course Project"
+date: "Thursday, August 14, 2014"
+output: html_document
+---
+
+This codebook describes 
+
+* the variables  
+* the data  
+* the transformations 
+ 
+### The variables 
+We have 3 types of variables:  
+* the subject codess, which come from the subject_train.txt 
+resp subject_test.txt datasets. There is 1 entry per observation.
+In total we have 30 subjects. 
+
+* the activity codes, which come from the y.train.txt and y.test.txt datasets. For readability, this codes are translated to labels, for this the dataset activity_labels.txt is used. 
+There are 6 different activities with codes 1-6 and labels as described.
+```{r}
+activity =  read.table("activity_labels.txt", 
+                       header=F, colClasses=c("integer", "character"))
+activity[,2] = tolower(activity[,2])
+names(activity) = c("Code", "Label")
+activity 
+```
+
+
+* the computed data from the measurements: 
+In total there are 561 computed numeric variables per observation which are provided in the X_train.txt and X_test.txt datasts. The names of the variables are contained in the features.txt dataset and are read from there for further processing. 
+
+Out of these 561 variables, 66 variables are selected. 
+The relevant variables are identified using regular expressionws applied to their names. 
+The selected names contain either -mean() or -std()  as substrings. 
+The grep() function provides the indices needed to select the variables in the later steps. 
+
+
+```{r}
+features = read.table("features.txt", 
+                      header=F, colClasses=c("integer", "character"))
+names(features) = c("seq", "varname")
+
+select_mean = grep('+-mean\\(\\)*', features$varname)    
+select_std = grep("*-std\\(\\)*", features$varname)
+select = unique(c(select_mean, select_std))  # combine lists
+features[select,]
+```
+
+
+### The data
+For both the training and the test dataset, the subject code, activity code and computed values come from corresponding rows in the different datasets as described above. 
+
+The R script does this combination for the training and the test data and finally combines both sets for the computation of averages per activity and subject. 
+
+
+### The Process
+
+The process is completely handled and described by the given R script. 
+The only preparation was to extract the data from the zip file and to move them either into the main level of the repository or one level below (train and test). 
+
+After that preparation, the R script 
+- reads the meta data regarding variables and activites,   
+- selects the relevant variables,   
+- reads and combines the various data files,  
+- transforms the activity codes into a factor variable,  
+- splits the combined file along subjects and activities   
+- computes the averages of the selected variables per subject and activity  
+- writes the data frame containing these averages into the repository.   
+
+
+
